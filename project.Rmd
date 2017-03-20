@@ -1,0 +1,90 @@
+---
+title: "Effect of auto/manual transmission on MPG in motor cars"
+author: "Amelia"
+date: "1 March 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+## Executive Summary
+
+This report investigates if  automatic or manual transmission better for MPG in motor cars, and quantify the MPG difference between automatic and manual transmissions. Models variables are selected based on variables with the strongest correlation to MPG and tested with a nested model. Based on the results, a model with the following variables: am, wt, cyl was selected. Based on the model selected, changing from auto to manual increase the millage by 0.1765 miles/gallon. The 95% confidence interval based on model 3 is prediction + 5.27907 or -5.27907.
+
+## Model Selection
+
+From the boxplot, the manual cars have a better miles/gallon record than auto cars. (see appendix Figure 1)
+
+For this project, 3 linear models will be compared. The selection of these variable are based on the variables with the strongest correlation. (see appendix Figure 2)
+
+Model 1: Response variable: miles/gallon, Predictor variable: auto/manual transmission as factor only
+Model 2: Response variable: miles/gallon, Predictor variable: auto/manual transmission as factor and wt.
+Model 3: Response variable: miles/gallon, Predictor variable: auto/manual transmission as factor, weight and cylinder.
+
+Using nested model testing, we test if the additional variable adds information to the model.
+
+```{r nested model}
+mod1<-lm(mpg~ factor(am),data = mtcars)
+mod2<-lm(mpg~ factor(am)+wt,data = mtcars)
+mod3<-lm(mpg~ factor(am)+wt+cyl,data = mtcars)
+anova(mod1,mod2,mod3)
+```
+
+The results shows that we can reject the null hypothesis and the addiional factor wt adds informtion to the model. Hence all predictor variables are significant. Model 3 is selected over model 1 and 2.
+
+```{r model}
+summary(mod3)
+
+# confidence intervals
+mod3coef<- coef(summary(mod3))
+error<- sum(mod3coef[,2])
+```
+
+## Conclusion
+
+Based on the model, changing from auto to manual increase the millage by 0.1765 miles/gallon. The 95% confidence interval based on model 3 is prediction + 5.27907 or -5.27907. See appendix Figure 3 for residual analysis
+
+## Residual Analysis
+1. The Residuals vs. Fitted plot shows no consistent pattern, supporting the accuracy of the 
+independence assumption.
+2. The Normal Q-Q plot indicates that the residuals are normally distributed because the
+points lie closely to the line.
+3. The Scale-Location plot confirms the constant variance assumption, as the points are
+randomly distributed.
+4. The Residuals vs. Leverage argues that no outliers are present, as all values fall well
+within the 0.5 bands
+
+## Appendix
+### EDA
+#### Boxplot
+
+```{r boxplot}
+boxplot(mpg~am, data = mtcars, xlab = "0=auto, 1=manual", ylab = "miles/gallon")
+```
+
+Figure 1: Manual cars have a better miles/gallon record than auto cars.
+
+#### Correlation plot
+```{r corrplot}
+library(ggcorrplot)
+corr <- round(cor(mtcars), 1)
+head(corr[, 1:6])
+p.mat <- cor_pmat(mtcars)
+head(p.mat[, 1:4])
+ggcorrplot(corr)
+```
+
+Figure 2: correlation plot shows that the strongest correlations to mpg is wt and cyl, and the correlation is negative.
+
+#### Residual analysis
+```{r resplot}
+par(mfrow=c(2,2))
+plot(mod3)
+```
+
+Figure 3: There are 2 points with higher residual at highest mpg. The the remaining residuals are well spread across the different mpg scale and thus this model is likely to be a good fit.
+
+
+.
